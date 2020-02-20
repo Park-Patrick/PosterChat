@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'posterchat.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("POSTERCHAT_DB_NAME"),
+        'USER': os.getenv("POSTERCHAT_DB_USER"),
+        'PASSWORD': os.getenv("POSTERCHAT_DB_PASSWORD"),
+        'HOST': os.getenv("POSTERCHAT_DB_HOST"),
+        'PORT': os.getenv("POSTERCHAT_DB_PORT"),
     }
 }
 
@@ -122,4 +126,4 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
