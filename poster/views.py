@@ -270,3 +270,73 @@ class PostListView51(ListView):
 	template_name = "poster/post_list51.html"
 	queryset = Post.objects.all()
 	context_object_name = 'posts'
+
+class PostListViewA(ListView):
+	template_name = "poster/post_lista.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewB(ListView):
+	template_name = "poster/post_listb.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewC(ListView):
+	template_name = "poster/post_listc.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewD(ListView):
+	template_name = "poster/post_listd.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewE(ListView):
+	template_name = "poster/post_liste.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewF(ListView):
+	template_name = "poster/post_listf.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewG(ListView):
+	template_name = "poster/post_listg.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewH(ListView):
+	template_name = "poster/post_listh.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewart1(ListView):
+	template_name = "poster/post_listart1.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewart2(ListView):
+	template_name = "poster/post_listart2.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewart3(ListView):
+	template_name = "poster/post_listart3.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewart4(ListView):
+	template_name = "poster/post_listart4.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewart5(ListView):
+	template_name = "poster/post_listart5.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'
+
+class PostListViewart6(ListView):
+	template_name = "poster/post_listart6.html"
+	queryset = Post.objects.all()
+	context_object_name = 'posts'

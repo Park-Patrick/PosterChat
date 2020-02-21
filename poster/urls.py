@@ -52,7 +52,21 @@ from .views import (
 	PostListView48,
 	PostListView49,
 	PostListView50,
-	PostListView51
+	PostListView51,
+	PostListViewA,
+	PostListViewB,
+	PostListViewC,
+	PostListViewD,
+	PostListViewE,
+	PostListViewF,
+	PostListViewG,
+	PostListViewH,
+	PostListViewart1,
+	PostListViewart2,
+	PostListViewart3,
+	PostListViewart4,
+	PostListViewart5,
+	PostListViewart6
 )
 
 app_name = 'poster'
@@ -111,5 +125,19 @@ urlpatterns = [
 	path('48/', PostListView48.as_view(), name='post_list48'),
 	path('49/', PostListView49.as_view(), name='post_list49'),
 	path('50/', PostListView50.as_view(), name='post_list50'),
-	path('51/', PostListView51.as_view(), name='post_list51')
+	path('51/', PostListView51.as_view(), name='post_list51'),
+	path('a/', PostListViewA.as_view(), name='post_lista'),
+	path('b/', PostListViewB.as_view(), name='post_listb'),
+	path('c/', PostListViewC.as_view(), name='post_listc'),
+	path('d/', PostListViewD.as_view(), name='post_listd'),
+	path('e/', PostListViewE.as_view(), name='post_liste'),
+	path('f/', PostListViewF.as_view(), name='post_listf'),
+	path('g/', PostListViewG.as_view(), name='post_listg'),
+	path('h/', PostListViewH.as_view(), name='post_listh'),
+	path('art1/', PostListViewart1.as_view(), name='post_listart1'),
+	path('art2/', PostListViewart2.as_view(), name='post_listart2'),
+	path('art3/', PostListViewart3.as_view(), name='post_listart3'),
+	path('art4/', PostListViewart4.as_view(), name='post_listart4'),
+	path('art5/', PostListViewart5.as_view(), name='post_listart5'),
+	path('art6/', PostListViewart6.as_view(), name='post_listart6')
 ]
