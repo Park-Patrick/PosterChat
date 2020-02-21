@@ -7,5 +7,6 @@ app_name = 'poster'
 
 urlpatterns = [
 #local : http://127.0.0.1:8000/
-	path('', PostListView.as_view(), name='post_list')
+	path('', PostListView.as_view(), name='post_list'),
+	# path('1/', PostListView.as_view(), name='post_list')
 ]
