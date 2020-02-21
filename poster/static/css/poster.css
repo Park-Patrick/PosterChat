@@ -7,7 +7,7 @@ html, body{
 header{
 	background-color: #FAFAFA;
 	border-bottom: 1px solid #ccc;
-	position: fixed;
+/*	position: fixed;*/
 	left: 0;
 	top: 0;
 	width: 100%;
@@ -78,7 +78,7 @@ header{
 }
 
 .content_container{
-	background-color: #FAFAFA;
+	background-color: #ffff;
 	padding-top: 50px;
 	position: absolute;
 	width: 100%;
@@ -204,4 +204,11 @@ header{
     color: #111;
     padding: 0px 16px;
     text-transform: uppercase;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
 }
