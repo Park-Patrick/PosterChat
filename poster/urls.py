@@ -1,11 +1,10 @@
 from django.urls import path, include
-from .views import (
-	PostListView
-)
+from . import views
 
 app_name = 'poster'
 
 urlpatterns = [
-#local : http://127.0.0.1:8000/
-	path('', PostListView.as_view(), name='post_list')
+    path('', views.IndexView.as_view(), name='conference_index'),
+    path('<int:pk>/', views.conference_detail, name='conference_detail'),
+    path('poster/<int:pk>/', views.poster_detail, name='poster_detail'),
 ]

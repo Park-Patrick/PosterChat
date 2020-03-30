@@ -1,0 +1,66 @@
+{% extends 'base.html' %} {% block content %} {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}" />
+
+<div class="container" id="poster">
+  <h1>{{ poster.title }}</h1>
+  <h2>{{ poster.subtitle }}</h2>
+  <div class="container" id="poster-image">
+    <img
+      src="{{ poster.image.url }}"
+      class="img-fluid"
+      alt="Responsive image"
+    />
+  </div>
+</div>
+<br />
+<div class="container" id="poster-description">
+  <h2>Description</h2>
+  <p>{{ poster.description }}</p>
+</div>
+<br />
+<div class="container" id="poster-comments">
+  <h2>Comments</h2>
+  {% for comment in comments %}
+  <div class="comments" style="padding: 10px;">
+    <a href="{% url 'core:profile' comment.author.username %}"
+      ><img
+        class="rounded-circle img-fluid"
+        style="height: 64px;"
+        src="{{ comment.author.avatar.url }}"
+        alt=""
+    /></a>
+    <p class="font-weight-bold">
+      <a href="{% url 'core:profile' comment.author.username %}"
+        >{{ comment.author.first_name }} {{ comment.author.last_name }}</a
+      >
+      <span class="text-muted font-weight-normal">
+        {{ comment.created_date }}
+      </span>
+    </p>
+    {{ comment.body | linebreaks }}
+  </div>
+  {% endfor %} {% if user.is_authenticated %}
+  <div class="card-body">
+    {% if new_comment %}
+    <div class="alert alert-success" role="alert">
+      Comment posted
+    </div>
+    {% else %}
+    <h3>Leave a comment</h3>
+    {% load crispy_forms_tags %}
+
+    <form method="post" style="margin-top: 1.3em;">
+      {{ comment_form | crispy }} {% csrf_token %}
+      <button class="btn btn-primary" type="submit">Submit</button>
+    </form>
+    {% endif %}
+  </div>
+  {% else %}
+  <p>
+    <a href="{% url 'account_signup' %}">Sign up</a> or
+    <a href="{% url 'account_login' %}">login</a> to comment.
+  </p>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% if posters %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Poster</th>
+          <th scope="col">Subtitle</th>
+          <th scope="col">Publish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for poster in posters %}
+          <tr>
+            <td>
+              <a href="{% url 'poster:poster_detail' poster.id %}">{{ poster.title }}</a>
+            </td>
+            <td>{{ poster.subtitle }}</td>
+            <td>{{ poster.created_date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No posters are available.</p>
+  {% endif %}
+  
+{% endblock  %}

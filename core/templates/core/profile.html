@@ -1,0 +1,28 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  {% if user.is_authenticated %}
+  <div class="">
+    <img class="rounded-circle-account-img" src="{{ profile.avatar.url }}" />
+    <div class="media-body">
+      <h2>{{ profile.first_name }} {{ profile.last_name }}</h2>
+      <h2 class="account-heading">{{ profile.username }}</h2>
+      <p class="text-secondary">{{ user.email }}</p>
+      <p>{{ profile.description }}</p>
+    </div>
+    {% if user.username == profile.username %}
+    <a
+      href="{% url 'core:profile_edit' profile.username %}"
+      class="btn btn-sm btn-secondary"
+      >Edit</a
+    >
+    {% endif %}
+  </div>
+
+  {% else %}
+  <p>
+    <a href="{% url 'account_signup' %}">Sign up</a> or
+    <a href="{% url 'account_login' %}">login</a> to view profiles.
+  </p>
+  {% endif %}
+</div>
+{% endblock %}
