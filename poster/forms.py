@@ -1,13 +1,11 @@
 from django import forms
 from .models import Poster, Comment
-# from crispy_forms.helper import FormHelper
-# from crispy_forms.layout import Submit, Layout, Field
 
 
-# class PostForm(forms.ModelForm):
-#     helper = FormHelper()
-#     helper.form_method = "POST"
-#     helper.add_input(Submit('Post', 'Post', css_class='btn-pri'))
+class PosterForm(forms.ModelForm):
+    class Meta:
+        model = Poster
+        fields = ('title', 'subtitle', 'description', 'image',)
 
 
 class CommentForm(forms.ModelForm):

@@ -16,6 +16,9 @@
 <div class="container" id="poster-description">
   <h2>Description</h2>
   <p>{{ poster.description }}</p>
+  {% if is_editable %}
+    <a href="{% url 'poster:poster_update' conference.id poster.id %}">Edit Poster</a>
+  {% endif %}
 </div>
 <br />
 <div class="container" id="poster-comments">
@@ -45,14 +48,13 @@
     <div class="alert alert-success" role="alert">
       Comment posted
     </div>
-    {% else %}
-    <h3>Leave a comment</h3>
-    {% load crispy_forms_tags %}
-
-    <form method="post" style="margin-top: 1.3em;">
-      {{ comment_form | crispy }} {% csrf_token %}
-      <button class="btn btn-primary" type="submit">Submit</button>
-    </form>
+    {% elif can_comment %}
+      <h3>Leave a comment</h3>
+      {% load crispy_forms_tags %}
+      <form method="post" style="margin-top: 1.3em;">
+        {{ comment_form | crispy }} {% csrf_token %}
+        <button class="btn btn-primary" type="submit">Submit</button>
+      </form>
     {% endif %}
   </div>
   {% else %}

@@ -39,12 +39,17 @@ class UserManager(BaseUserManager):
 
 
 """
-User Groups:
+So when a conference is CRU, we need to create three groups:
+    1. Organizers
+    2. Attendees
+    3. Guests
+
 - Organizers (can create/delete posters)
     - Can add/delete/change/view their conferences
     - Can add/delete/change/view their conference's posters
     - Can add/delete/change/view their conference's poster's comments
     - Can add/change/view their own accounts
+
 
 - Attendees (a conference object hold these, can comment on any poster in the conference)
     - Can delete/change/view their own poster

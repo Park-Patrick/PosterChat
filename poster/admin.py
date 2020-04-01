@@ -23,8 +23,8 @@ class PosterInline(admin.TabularInline):
 
 class ConferenceAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {"fields": ["title", "institution",
-                           "description"]})
+        (None, {"fields": ["title", "institution", "description"]}),
+        ("Users", {"fields": ["organizers", "attendees", "guests"]}),
     ]
     inlines = [PosterInline]
 
