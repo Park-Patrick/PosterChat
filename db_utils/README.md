@@ -1,8 +1,14 @@
-# Posterchat Dev DB
+# Posterchat DB Wiki
 
-This document outlines how to deploy a local Postgresql db to use for development. For dev, we use the official Postgresql container as our actual instance of Postgres, and Adminer as a management interface.
+## Table of Contents
+
+- [Posterchat DB Wiki](#posterchat-db-wiki)
+  - [Setting up the Posterchat DB](#setting-up-the-posterchat-db)
+  - [How PosterChat is Connected to Postgres](#how-posterchat-is-connected-to-postgres)
 
 ## Setting up the Posterchat DB
+
+This document outlines how to deploy a local Postgresql db to use for development. For dev, we use the official Postgresql container as our actual instance of Postgres, and Adminer as a management interface.
 
 1. First make sure docker-ce and docker-compose are installed. We use docker to ensure that the dev environment is consistent across computers. We don't want unit tests to only fail for some developers, simply because of how they might have their environment set up.
 
