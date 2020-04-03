@@ -42,7 +42,7 @@ volumes:
       - db_data:/var/lib/postresql/data
 ```
 
-This is telling Docker that we want to create a shared volume called "db_data' (a human-friendly name) and map it to where Postgres expects data to be stored _inside_ the container.
+This is telling Docker that we want to create a shared volume called "db*data' (a human-friendly name) and map it to where Postgres expects data to be stored \_inside* the container.
 
 4. Before we run the container, we need to specify some environment variables. Add the following environment variables to your system (I'm on a Mac so this is in ~/.zshrc)
 
@@ -195,3 +195,71 @@ Running migrations:
   Applying socialaccount.0001_initial... OK
   Applying socialaccount.0002_token_max_lengths... OK
 ```
+
+## How PosterChat is Connected to Postgres
+
+PosterChat uses PostgreSQL in the backend. Below are implementation details on how this was set up.
+
+Connection details are specified via environment variables. When we go to deploy, we will simply point the server to the correct database via environment variables. The same can be done in a dev environment.
+
+The reason behind this is so that there are minimal changes in the code when changing which database we would like our Django application to point to. All you need to do is modify your environment variables. For this demonstration I will show how to point Django to our instance of PostgreSQL running in the cloud.
+
+1. Add relevant environment variables specified in settings.py.
+
+Below you can see this is what is present in settings.py
+
+```
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("POSTERCHAT_DB_NAME"),
+        'USER': os.getenv("POSTERCHAT_DB_USER"),
+        'PASSWORD': os.getenv("POSTERCHAT_DB_PASSWORD"),
+        'HOST': os.getenv("POSTERCHAT_DB_HOST"),
+        'PORT': os.getenv("POSTERCHAT_DB_PORT"),
+    },
+    "TEST": {
+        "NAME": "test_posterchat" # Used for running unit tests
+    }
+}
+```
+
+So on my system (MacOS/Linux) I just need to add the environment variables to my path.
+
+```
+# POSTCHAT CONFIG
+export POSTERCHAT_DB_NAME="<db_name>"
+export POSTERCHAT_DB_USER="<db_user>"
+export POSTERCHAT_DB_PASSWORD="<db_password>"
+export POSTERCHAT_DB_HOST="<db_host>"
+export POSTERCHAT_DB_PORT="<db_port>"
+```
+
+2. If this is a new database instance, we need to use the usual Django migration steps
+
+```
+(pc) seranthirugnanam@MBP001 PosterChat % python manage.py migrate
+Operations to perform:
+  Apply all migrations: admin, auth, contenttypes, poster, sessions
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying poster.0001_initial... OK
+  Applying sessions.0001_initial... OK
+```
+
+And that should be it. If you want to point to a different database, just change the environment variables and run again.
