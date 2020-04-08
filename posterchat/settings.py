@@ -48,18 +48,12 @@ INSTALLED_APPS = [
     # 'allauth.socialaccount.providers.linkedin',
 
     'crispy_forms',
-    'guardian',
     'poster',
     'core',
 ]
 SITE_ID = 1
 ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "core:home"
-
-# EMAIL_HOST = "smtp-relay.sendinblue.com"
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = "django"
-# EMAIL_HOST_PASSWORD = "xsmtpsib-bbd086c91b63d66c418e0f0720e8ff585c051fa95b0165aaf8d0de779259c379-dpXOyx3YZCA1hPvs"
 
 AUTH_USER_MODEL = 'core.User'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
@@ -102,7 +96,6 @@ TEMPLATES = [
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-    'guardian.backends.ObjectPermissionBackend',
 )
 
 WSGI_APPLICATION = 'posterchat.wsgi.application'
