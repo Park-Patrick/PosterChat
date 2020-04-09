@@ -10,6 +10,43 @@ from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
 
+def validate_name(name: str):
+    """Ensures that names for users comply with PosterChat."""
+    if name.startswith('-') or name.endswith('-'):
+        msg = "%(name)s cannot start or end with '-'."
+    elif name.startswith(' ') or name.endswith(' '):
+        msg = "%(name)s cannot start or end with spaces."
+    elif not re.match(r'^[A-Za-z-\s]+$', name):
+        msg = "%(name)s can only have letters, and hyphen."
+    elif re.match(r'.*[-]{2,}.*', name):
+        msg = "%(name)s cannot have multiple '-' in a row."
+    elif re.match(r'.*[\s]{2,}.*', name):
+        msg = "%(name)s cannot have multiple spaces in a row."
+    else:
+        return
+    raise ValidationError(_(msg), "invalid_name", {"name": name})
+
+
+def validate_username(name: str):
+    """Ensures that usernames comply with PosterChat's requirements."""
+    validators.RegexValidator(r'^[A-Za-z\d_]+$', )
+
+    if not re.match(r'^[A-Za-z\d_]+$', name):
+        msg = _("Only allowed letters, numbers and underscore.")
+    elif len("".join(letter for letter in name if letter.isalnum())) < 5:
+        msg = "%(name)s must be at least 5 alphanumeric chars long."
+    elif name[0].isdigit():
+        msg = "%(name)s cannot start with a number.",
+    elif name.startswith('_') or name.endswith('_'):
+        msg = "%(name)s cannot start or end with underscore."
+    elif re.match(r'.*[_]{2,}.*', name):
+        msg = "%(name)s cannot have multiple '_' in a row."
+    else:
+        return
+
+    raise ValidationError(_(msg), "invalid_username", {"name": name})
+
+
 class UserManager(BaseUserManager):
     """Implements Django user manager to use the custom user in PosterChat
 
@@ -111,40 +148,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         validate_name(self.first_name)
         validate_name(self.last_name)
         validate_username(self.username)
-
-
-def validate_name(name: str):
-    """Ensures that names for users comply with PosterChat."""
-    if name.startswith('-') or name.endswith('-'):
-        msg = "%(name)s cannot start or end with '-'."
-    elif name.startswith(' ') or name.endswith(' '):
-        msg = "%(name)s cannot start or end with spaces."
-    elif not re.match(r'^[A-Za-z-\s]+$', name):
-        msg = "%(name)s can only have letters, and hyphen."
-    elif re.match(r'.*[-]{2,}.*', name):
-        msg = "%(name)s cannot have multiple '-' in a row."
-    elif re.match(r'.*[\s]{2,}.*', name):
-        msg = "%(name)s cannot have multiple spaces in a row."
-    else:
-        return
-    raise ValidationError(_(msg), "invalid_name", {"name": name})
-
-
-def validate_username(name: str):
-    """Ensures that usernames comply with PosterChat's requirements."""
-    validators.RegexValidator(r'^[A-Za-z\d_]+$', )
-
-    if not re.match(r'^[A-Za-z\d_]+$', name):
-        msg = _("Only allowed letters, numbers and underscore.")
-    elif len("".join(letter for letter in name if letter.isalnum())) < 5:
-        msg = "%(name)s must be at least 5 alphanumeric chars long."
-    elif name[0].isdigit():
-        msg = "%(name)s cannot start with a number.",
-    elif name.startswith('_') or name.endswith('_'):
-        msg = "%(name)s cannot start or end with underscore."
-    elif re.match(r'.*[_]{2,}.*', name):
-        msg = "%(name)s cannot have multiple '_' in a row."
-    else:
-        return
-
-    raise ValidationError(_(msg), "invalid_username", {"name": name})
