@@ -1,43 +1,13 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.db import models
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as trans
-from django.core.exceptions import ValidationError
-from PIL import Image
 import re
 
-
-def validate_name(name: str):
-    if name.startswith('-') or name.endswith('-'):
-        msg = "%(name)s cannot start or end with '-'."
-    elif name.startswith(' ') or name.endswith(' '):
-        msg = "%(name)s cannot start or end with spaces."
-    elif not re.match(r'^[A-Za-z-\s]+$', name):
-        msg = "%(name)s can only have letters, and hyphen."
-    elif re.match(r'.*[-]{2,}.*', name):
-        msg = "%(name)s cannot have multiple '-' in a row."
-    elif re.match(r'.*[\s]{2,}.*', name):
-        msg = "%(name)s cannot have multiple spaces in a row."
-    else:
-        return
-    raise ValidationError(trans(msg), "invalid_name", {"name": name})
-
-
-def validate_username(name: str):
-    if not re.match(r'^[A-Za-z\d_]+$', name):
-        msg = "%(name)s can only have letters, numbers and underscore."
-    elif len("".join(letter for letter in name if letter.isalnum())) < 5:
-        msg = "%(name)s must be at least 5 alphanumeric chars long."
-    elif name[0].isdigit():
-        msg = "%(name)s cannot start with a number.",
-    elif name.startswith('_') or name.endswith('_'):
-        msg = "%(name)s cannot start or end with underscore."
-    elif re.match(r'.*[_]{2,}.*', name):
-        msg = "%(name)s cannot have multiple '_' in a row."
-    else:
-        return
-
-    raise ValidationError(trans(msg), "invalid_username", {"name": name})
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
+from django.core import validators
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from PIL import Image
 
 
 class UserManager(BaseUserManager):
@@ -50,29 +20,28 @@ class UserManager(BaseUserManager):
     def create_user(self, email, first_name, last_name, username, password=None, commit=True, **extra_kwargs):
 
         if not email:
-            raise ValueError(trans("Users must have an email address"))
+            raise ValueError(_("Users must have an email address"))
 
         if not first_name:
-            raise ValueError(trans('Users must have a first name'))
+            raise ValueError(_('Users must have a first name'))
 
         if not last_name:
-            raise ValueError(trans("Users must have a last name"))
+            raise ValueError(_("Users must have a last name"))
 
         if not username:
-            raise ValueError(trans("Users must have a username"))
+            raise ValueError(_("Users must have a username"))
 
         user = self.model(email=self.normalize_email(email), first_name=first_name,
                           last_name=last_name, username=username, **extra_kwargs)
-
         user.set_password(password)
+
         if commit:
             user.save(using=self._db)
         return user
 
     def create_superuser(self, email, first_name, last_name, username, password):
-        user = self.create_user(
-            email, password=password, first_name=first_name, last_name=last_name, username=username, commit=False)
-
+        user = self.create_user(email, password=password, first_name=first_name,
+                                last_name=last_name, username=username, commit=False)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
@@ -87,44 +56,34 @@ class User(AbstractBaseUser, PermissionsMixin):
     https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#specifying-a-custom-user-model
     """
 
-    email = models.EmailField(verbose_name=trans(
-        "email address"), max_length=255, unique=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ["first_name", "last_name", "username"]
 
-    first_name = models.CharField(
-        trans("first name"), max_length=30, blank=True, validators=[validate_name])
-    last_name = models.CharField(
-        trans("last name"), max_length=150, blank=True, validators=[validate_name])
+    email = models.EmailField(verbose_name=_("email address"),
+                              max_length=255, unique=True)
 
-    # 16 chars max
-    # 5 chars min
-    # Alphanumeric with -,_
-    # Must have at least 1 letter
-    # Not allowed to start with number
-    # Cannot include multiple in class [-,_] in a row
-    # No trailing/prefixing [-,_]
+    first_name = models.CharField(_("first name"), max_length=30,
+                                  blank=True, validators=[validate_name])
+    last_name = models.CharField(_("last name"), max_length=150,
+                                 blank=True, validators=[validate_name])
 
-    username = models.SlugField(
-        trans("user name"), max_length=16, unique=True, validators=[validate_username])
+    username = models.SlugField(_("user name"), max_length=16, unique=True,
+                                validators=[])
 
-    is_active = models.BooleanField(trans('active'), default=True, help_text=trans(
-        "Use this to delete accounts. Inactive (False) accounts should be treated as if they're deleted."))
+    # Optional fields
+    is_active = models.BooleanField(_('active'), default=True,
+                                    help_text=_("Use this to delete accounts. Inactive (False) accounts should be treated as if they're deleted."))
 
-    is_staff = models.BooleanField(trans("staff status"), default=False, help_text=trans(
-        "If True, user can log into the admin site."))
+    is_staff = models.BooleanField(_("staff status"), default=False,
+                                   help_text=_("If True, user can log into the admin site."))
 
-    date_joined = models.DateTimeField(
-        trans("date joined"), default=timezone.now)
-    objects = UserManager()
-
+    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
     avatar = models.ImageField(
         "Profile Image", blank=True, upload_to="avatar_images")
 
     description = models.TextField("Bio", blank=True)
 
-    # Conferences attended, Posters authored, Comments,
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ["first_name", "last_name", "username"]
+    objects = UserManager()
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
@@ -136,6 +95,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.get_full_name()} <{self.email}>"
 
     def save(self, *args, **kwargs):
+        """Overloads save method to resize avatar on save"""
         super().save(*args, **kwargs)
         if self.avatar:
             img = Image.open(self.avatar.path)
@@ -146,15 +106,45 @@ class User(AbstractBaseUser, PermissionsMixin):
                 super().save()
 
     def clean(self):
+        """Performs pre-db validation on several fields."""
         super().clean()
-
-        # Clean first and last name
         validate_name(self.first_name)
         validate_name(self.last_name)
         validate_username(self.username)
 
-        # setattr(self, self.USERNAME_FIELD, self.normalize_username(self.get_username()))
 
-        # Clean username
+def validate_name(name: str):
+    """Ensures that names for users comply with PosterChat."""
+    if name.startswith('-') or name.endswith('-'):
+        msg = "%(name)s cannot start or end with '-'."
+    elif name.startswith(' ') or name.endswith(' '):
+        msg = "%(name)s cannot start or end with spaces."
+    elif not re.match(r'^[A-Za-z-\s]+$', name):
+        msg = "%(name)s can only have letters, and hyphen."
+    elif re.match(r'.*[-]{2,}.*', name):
+        msg = "%(name)s cannot have multiple '-' in a row."
+    elif re.match(r'.*[\s]{2,}.*', name):
+        msg = "%(name)s cannot have multiple spaces in a row."
+    else:
+        return
+    raise ValidationError(_(msg), "invalid_name", {"name": name})
 
-        # Clean email
+
+def validate_username(name: str):
+    """Ensures that usernames comply with PosterChat's requirements."""
+    validators.RegexValidator(r'^[A-Za-z\d_]+$', )
+
+    if not re.match(r'^[A-Za-z\d_]+$', name):
+        msg = _("Only allowed letters, numbers and underscore.")
+    elif len("".join(letter for letter in name if letter.isalnum())) < 5:
+        msg = "%(name)s must be at least 5 alphanumeric chars long."
+    elif name[0].isdigit():
+        msg = "%(name)s cannot start with a number.",
+    elif name.startswith('_') or name.endswith('_'):
+        msg = "%(name)s cannot start or end with underscore."
+    elif re.match(r'.*[_]{2,}.*', name):
+        msg = "%(name)s cannot have multiple '_' in a row."
+    else:
+        return
+
+    raise ValidationError(_(msg), "invalid_username", {"name": name})
