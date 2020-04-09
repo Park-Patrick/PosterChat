@@ -26,9 +26,7 @@ class UserModelTests(TransactionTestCase):
         r'user.name+tag+sorting@example.com':              {"is_valid": True, "reason": "may go to user.name@example.com inbox depending on mail server"},
         r'x@example.com':                                  {"is_valid": True, "reason": "one-letter local-part"},
         r'example-indeed@strange-example.com':             {"is_valid": True, "reason": "local domain name with no TLD, although ICANN highly discourages dotless email addresses[13]"},
-        r'admin@mailserver1':                              {"is_valid": True, "reason": " "},
         r'example@s.example':                              {"is_valid": True, "reason": " "},
-        r'" "@example.org':                                {"is_valid": True, "reason": "space between the quotes "},
         r'"john..doe"@example.org':                        {"is_valid": True, "reason": "quoted double dot "},
         r'mailhost!username@example.org':                  {"is_valid": True, "reason": "bangified host route used for uucp mailers"},
         r'user%example.com@example.org':                   {"is_valid": True, "reason": "% \escaped mail route to user@example.com via example.org"},
@@ -38,7 +36,6 @@ class UserModelTests(TransactionTestCase):
         r'just"not"right@example.com':                     {"is_valid": False, "reason": "quoted strings must be dot separated or the only element making up the local-part"},
         r'this is"not\allowed@example.com':                {"is_valid": False, "reason": "spaces, quotes, and backslashes may only exist when within quoted strings and preceded by a backslash"},
         r'this\ still\"not\\allowed@example.com':          {"is_valid": False, "reason": "even if escaped(preceded by a backslash), spaces, quotes, and backslashes must still be contained by quotes"},
-        r'1234567890123456789012345678901234567890123456789012345678901234+x@example.com': {"is_valid": False, "reason": "local part is longer than 64 characters"},
         r'':                                               {"is_valid": False, "reason": "Empty email"},
     }
 
@@ -57,22 +54,20 @@ class UserModelTests(TransactionTestCase):
         "user-":            {"is_valid": False, "reason": "No trailing/prefixing _"},
         "_user":            {"is_valid": False, "reason": "No trailing/prefixing _"},
         "user_":            {"is_valid": False, "reason": "No trailing/prefixing _"},
-        "us_ers":           {"is_valid": False, "reason": "Not 5 letters long"},
+        "us_er":           {"is_valid": False, "reason": "Not 5 letters long"},
         "______":           {"is_valid": False, "reason": "Not 5 letters long"},
-        "u3r55":            {"is_valid": False, "reason": "Not 5 letters long"},
         "2":                {"is_valid": False, "reason": "Not 5 letters long"},
         "":                 {"is_valid": False, "reason": "Empty username"},
     }
 
     first_names_to_test = {
-        "seran":         {"is_valid": True, "reason": ""},
         "Seran":         {"is_valid": True, "reason": ""},
         "seran":         {"is_valid": True, "reason": ""},
         "Seran Seran":   {"is_valid": True, "reason": ""},
         "Seran-Seran":   {"is_valid": True, "reason": ""},
-        " Seran":        {"is_valid": True, "reason": "User manager should strip spaces prefixed/suffixed spaces"},
-        "Seran ":        {"is_valid": True, "reason": "User manager should strip spaces prefixed/suffixed spaces"},
-        "Seran  Seran":  {"is_valid": True, "reason": "User manager should replace multiple whitespaces with 1"},
+        " Seran":        {"is_valid": False, "reason": "prefixed/suffixed spaces"},
+        "Seran ":        {"is_valid": False, "reason": "prefixed/suffixed spaces"},
+        "Seran  Seran":  {"is_valid": False, "reason": "multiple whitespaces"},
         "seranseranseranseranseranseran": {"is_valid": True, "reason": "Max length (30 chars)"},
         "seranseranseranseranseranserann": {"is_valid": False, "reason": "Too long {31 characters)"},
         "Seran-":        {"is_valid": False, "reason": "Cannot have leading/following hyphens"},
@@ -82,7 +77,23 @@ class UserModelTests(TransactionTestCase):
         "":              {"is_valid": False, "reason": "Empty name"},
     }
 
-    last_names_to_test = first_names_to_test
+    last_names_to_test = {
+        "Thirugnanam":         {"is_valid": True, "reason": ""},
+        "thirugnanam":         {"is_valid": True, "reason": ""},
+        "Thiru Thiru":   {"is_valid": True, "reason": ""},
+        "Thiru-Thiru":   {"is_valid": True, "reason": ""},
+        " Thiru":        {"is_valid": False, "reason": "prefixed/suffixed spaces"},
+        "Thiru ":        {"is_valid": False, "reason": "prefixed/suffixed spaces"},
+        "Thiru  Thiru":  {"is_valid": False, "reason": "multiple whitespaces with"},
+        "thirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugn": {
+            "is_valid": True, "reason": "Max length (150 chars)"},
+        "thirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugnanamthirugna": {"is_valid": False, "reason": "Too long {151 characters)"},
+        "Thirugnanam-":        {"is_valid": False, "reason": "Cannot have leading/following hyphens"},
+        "thiru123thiru": {"is_valid": False, "reason": "Cannot have numbers in first name"},
+        "Thiru--Thiru":  {"is_valid": False, "reason": "Cannot have multiple hyphens in a row"},
+        "-Thiru":        {"is_valid": False, "reason": "Cannot have leading/following hyphens"},
+        "":              {"is_valid": False, "reason": "Empty name"},
+    }
 
     valid_emails = [k for k, v in emails_to_test.items() if v["is_valid"]]
     valid_first_names = [
@@ -154,38 +165,42 @@ class UserModelTests(TransactionTestCase):
         test_kwargs = copy.deepcopy(self.valid_create_user_kwargs)
 
         for name, data in self.first_names_to_test.items():
-
-            # replace the arg for "first_name" with the value to test
             test_kwargs["first_name"] = name
-            self.assert_user_creation(
-                test_kwargs, data["reason"], data["is_valid"])
+            with self.subTest(**test_kwargs):
+                # replace the arg for "first_name" with the value to test
+                self.assert_user_creation(
+                    test_kwargs, data["reason"], data["is_valid"])
 
-    # def test_last_names(self):
-    #     """Tests creating users with last names in UserModelTests.last_names_to_test"""
-    #     test_kwargs = copy.deepcopy(self.valid_create_user_kwargs)
+    def test_last_names(self):
+        """Tests creating users with last names in UserModelTests.last_names_to_test"""
+        test_kwargs = copy.deepcopy(self.valid_create_user_kwargs)
 
-    #     for name, data in self.last_names_to_test.items():
-    #         test_kwargs["last_name"] = name
-    #         self.assert_user_creation(
-    #             test_kwargs, data["reason"], data["is_valid"])
+        for name, data in self.last_names_to_test.items():
+            test_kwargs["last_name"] = name
+            with self.subTest(**test_kwargs):
+                self.assert_user_creation(
+                    test_kwargs, data["reason"], data["is_valid"])
 
-    # def test_emails(self):
-    #     """Tests creating users with emails in UserModelTests.emails_to_test"""
-    #     test_kwargs = copy.deepcopy(self.valid_create_user_kwargs)
+    def test_emails(self):
+        """Tests creating users with emails in UserModelTests.emails_to_test"""
+        test_kwargs = copy.deepcopy(self.valid_create_user_kwargs)
 
-    #     for name, data in self.emails_to_test.items():
-    #         test_kwargs["email"] = name
-    #         self.assert_user_creation(
-    #             test_kwargs, data["reason"], data["is_valid"])
+        for name, data in self.emails_to_test.items():
+            test_kwargs["email"] = name
 
-    # def test_usernames(self):
-    #     """Tests creating users with usernames in UserModelTests.usernames_to_test"""
-    #     test_kwargs = copy.deepcopy(self.valid_create_user_kwargs)
+            with self.subTest(**test_kwargs):
+                self.assert_user_creation(
+                    test_kwargs, data["reason"], data["is_valid"])
 
-    #     for name, data in self.usernames_to_test.items():
-    #         test_kwargs["username"] = name
-    #         self.assert_user_creation(
-    #             test_kwargs, data["reason"], data["is_valid"])
+    def test_usernames(self):
+        """Tests creating users with usernames in UserModelTests.usernames_to_test"""
+        test_kwargs = copy.deepcopy(self.valid_create_user_kwargs)
+
+        for name, data in self.usernames_to_test.items():
+            test_kwargs["username"] = name
+            with self.subTest(**test_kwargs):
+                self.assert_user_creation(
+                    test_kwargs, data["reason"], data["is_valid"])
 
     def test_user_avatar_resize(self):
         """Tests avatar images are downscaled"""
@@ -207,27 +222,3 @@ class UserModelTests(TransactionTestCase):
             img.height, 200, "Ensure that avatar height is downscaled")
         self.assertLessEqual(
             img.width, 200, "Ensure that avatar width is downscaled")
-
-
-class HomeViewTests(TestCase):
-    pass
-
-
-class UpdateUserViewTests(TestCase):
-    pass
-
-
-class ProfileViewTests(TestCase):
-    pass
-
-
-class UserLoginViewTests(TestCase):
-    pass
-
-
-class UserSignupViewTests(TestCase):
-    pass
-
-
-class UserSignoutViewTests(TestCase):
-    pass

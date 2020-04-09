@@ -2,7 +2,42 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as trans
+from django.core.exceptions import ValidationError
 from PIL import Image
+import re
+
+
+def validate_name(name: str):
+    if name.startswith('-') or name.endswith('-'):
+        msg = "%(name)s cannot start or end with '-'."
+    elif name.startswith(' ') or name.endswith(' '):
+        msg = "%(name)s cannot start or end with spaces."
+    elif not re.match(r'^[A-Za-z-\s]+$', name):
+        msg = "%(name)s can only have letters, and hyphen."
+    elif re.match(r'.*[-]{2,}.*', name):
+        msg = "%(name)s cannot have multiple '-' in a row."
+    elif re.match(r'.*[\s]{2,}.*', name):
+        msg = "%(name)s cannot have multiple spaces in a row."
+    else:
+        return
+    raise ValidationError(trans(msg), "invalid_name", {"name": name})
+
+
+def validate_username(name: str):
+    if not re.match(r'^[A-Za-z\d_]+$', name):
+        msg = "%(name)s can only have letters, numbers and underscore."
+    elif len("".join(letter for letter in name if letter.isalnum())) < 5:
+        msg = "%(name)s must be at least 5 alphanumeric chars long."
+    elif name[0].isdigit():
+        msg = "%(name)s cannot start with a number.",
+    elif name.startswith('_') or name.endswith('_'):
+        msg = "%(name)s cannot start or end with underscore."
+    elif re.match(r'.*[_]{2,}.*', name):
+        msg = "%(name)s cannot have multiple '_' in a row."
+    else:
+        return
+
+    raise ValidationError(trans(msg), "invalid_username", {"name": name})
 
 
 class UserManager(BaseUserManager):
@@ -12,7 +47,7 @@ class UserManager(BaseUserManager):
     https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#writing-a-manager-for-a-custom-user-model
     """
 
-    def create_user(self, email, first_name, last_name, username, password=None, commit=True):
+    def create_user(self, email, first_name, last_name, username, password=None, commit=True, **extra_kwargs):
 
         if not email:
             raise ValueError(trans("Users must have an email address"))
@@ -26,8 +61,8 @@ class UserManager(BaseUserManager):
         if not username:
             raise ValueError(trans("Users must have a username"))
 
-        user = self.model(email=self.normalize_email(email),
-                          first_name=first_name, last_name=last_name, username=username)
+        user = self.model(email=self.normalize_email(email), first_name=first_name,
+                          last_name=last_name, username=username, **extra_kwargs)
 
         user.set_password(password)
         if commit:
@@ -55,13 +90,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name=trans(
         "email address"), max_length=255, unique=True)
 
-    # No need for password and last_login since this is provided via super
     first_name = models.CharField(
-        trans("first name"), max_length=30, blank=True)
+        trans("first name"), max_length=30, blank=True, validators=[validate_name])
     last_name = models.CharField(
-        trans("last name"), max_length=150, blank=True)
+        trans("last name"), max_length=150, blank=True, validators=[validate_name])
 
-    username = models.SlugField(trans("user name"), max_length=30, unique=True)
+    # 16 chars max
+    # 5 chars min
+    # Alphanumeric with -,_
+    # Must have at least 1 letter
+    # Not allowed to start with number
+    # Cannot include multiple in class [-,_] in a row
+    # No trailing/prefixing [-,_]
+
+    username = models.SlugField(
+        trans("user name"), max_length=16, unique=True, validators=[validate_username])
 
     is_active = models.BooleanField(trans('active'), default=True, help_text=trans(
         "Use this to delete accounts. Inactive (False) accounts should be treated as if they're deleted."))
@@ -74,9 +117,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     avatar = models.ImageField(
-        "Profile Image", default="default-avatar.png", upload_to="avatar_images")
+        "Profile Image", blank=True, upload_to="avatar_images")
 
-    description = models.TextField("Bio", default="")
+    description = models.TextField("Bio", blank=True)
 
     # Conferences attended, Posters authored, Comments,
 
@@ -93,10 +136,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.get_full_name()} <{self.email}>"
 
     def save(self, *args, **kwargs):
-        img = Image.open(self.avatar.path)
+        super().save(*args, **kwargs)
+        if self.avatar:
+            img = Image.open(self.avatar.path)
 
-        if img.height > 200 or img.width > 200:
-            img.thumbnail((200, 200))
-            img.save(self.avatar.path)
+            if img.height > 200 or img.width > 200:
+                img.thumbnail((200, 200))
+                img.save(self.avatar.path)
+                super().save()
 
-        super().save()
+    def clean(self):
+        super().clean()
+
+        # Clean first and last name
+        validate_name(self.first_name)
+        validate_name(self.last_name)
+        validate_username(self.username)
+
+        # setattr(self, self.USERNAME_FIELD, self.normalize_username(self.get_username()))
+
+        # Clean username
+
+        # Clean email
