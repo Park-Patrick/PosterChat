@@ -1,0 +1,31 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  {% if latest_conferences %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Conference</th>
+        <th scope="col">Institution</th>
+        <th scope="col">Publish Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for conference in latest_conferences %}
+      <tr>
+        <td>
+          <a href="{% url 'poster:conference_detail' conference.id %}"
+            >{{ conference.title }}</a
+          >
+        </td>
+        <td>{{ conference.institution }}</td>
+        <td>{{ conference.created_date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No conferences are available.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

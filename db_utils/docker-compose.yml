@@ -1,0 +1,24 @@
+# Use postgres/example user/password credentials
+version: "3.1"
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTERCHAT_DB_USER}
+      POSTGRES_PASSWORD: ${POSTERCHAT_DB_PASSWORD}
+      POSTGRES_DB: ${POSTERCHAT_DB_NAME}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTERCHAT_DB_PORT}:5432
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db_data:

@@ -1,0 +1,11 @@
+{% extends 'base.html' %} {% block content %} {% load crispy_forms_tags %}
+
+{% if user.username == profile.username %}
+  <div class="container">
+    <form method="post" style="margin-top: 1.3em;">
+        {{ form | crispy }} {% csrf_token %}
+        <button class="btn btn-primary" type="submit">Submit changes</button>
+      </form>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h1>Organizers</h1>
+  {% for organizer in organizers %}
+    <a href="{% url 'core:profile' organizer.username %}">{{ organizer.first_name }} {{ organizer.last_name }}</a>
+  {% endfor %}
+
+  <h1>Attendees</h1>
+  {% for attendee in attendees %}
+    <a href="{% url 'core:profile' attendee.username %}">{{ attendee.first_name }} {{ attendee.last_name }}</a>
+  {% endfor %}
+
+  {% if posters %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Poster</th>
+        <th scope="col">Subtitle</th>
+        <th scope="col">Publish Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for poster in posters %}
+      <tr>
+        <td>
+          <a href="{% url 'poster:poster_detail' conference.id poster.id %}"
+            >{{ poster.title }}</a
+          >
+        </td>
+        <td>{{ poster.subtitle }}</td>
+        <td>{{ poster.created_date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>No posters are available.</p>
+  {% endif %} 
+
+  {% if is_organizer %}
+    <a class="btn btn-md btn-primary" href="{% url 'poster:poster_create' conference.pk %}">Add new</a>
+  {% endif %}
+</div>
+
+{% endblock %}
